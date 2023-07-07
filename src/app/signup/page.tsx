@@ -3,24 +3,53 @@
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [user, setUser] = useState({
     email: "",
     password: "",
     username: "",
   });
 
-  const onSignup = async () => {};
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onSignup = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/users/signup", user);
+      console.log("Signup Success", response.data);
+      router.push("/login");
+    } catch (error: any) {
+      console.log("Signup Failed", error.message);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      user.email.length > 0 &&
+      user.password.length > 0 &&
+      user.username.length > 0
+    ) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1>Signup</h1>
+      <h1>{loading ? "Loading..." : "Signup"}</h1>
       <hr />
       <label htmlFor="username">username</label>
       <input
-        className="p-2 border-gray-300 rounded-lg mb-4"
+        className="p-2 border-gray-300 rounded-lg mb-4 text-black"
         id="username"
         type="text"
         value={user.username}
@@ -29,7 +58,7 @@ export default function SignupPage() {
       />
       <label htmlFor="email">email</label>
       <input
-        className="p-2 border-gray-300 rounded-lg mb-4"
+        className="p-2 border-gray-300 rounded-lg mb-4 text-black"
         id="email"
         type="email"
         value={user.email}
@@ -38,7 +67,7 @@ export default function SignupPage() {
       />
       <label htmlFor="password">password</label>
       <input
-        className="p-2 border-gray-300 rounded-lg mb-4"
+        className="p-2 border-gray-300 rounded-lg mb-4 text-black"
         id="password"
         type="password"
         value={user.password}
@@ -49,7 +78,7 @@ export default function SignupPage() {
         onClick={onSignup}
         className="p-2 border border-gray-300 rounded-lg mb-4"
       >
-        Signup
+        {buttonDisabled ? "No Signup" : "Signup"}
       </button>
       <Link href="/login">Login Here</Link>
     </div>
